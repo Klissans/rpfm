@@ -42,6 +42,9 @@ pub const SCHEMA_EXPLORER_PATH: &str = "/schema-explorer";
 /// `host:port` values the server answers to, built from [`server_address`].
 pub(crate) static ALLOWED_HOSTS: LazyLock<Vec<String>> = LazyLock::new(|| allowed_hosts(server_address()));
 
+/// Browser origins allowed on `/ws` besides the server's own page: a page served locally for testing.
+const EXTRA_ALLOWED_ORIGINS: [&str; 1] = ["http://localhost:8000"];
+
 /// The explorer's files: path under [`SCHEMA_EXPLORER_PATH`], content type, and contents.
 const ASSETS: &[(&str, &str, &[u8])] = &[
     ("index.html", "text/html; charset=utf-8", include_bytes!("../assets/schema_explorer/index.html")),
@@ -167,12 +170,12 @@ pub(crate) fn is_allowed_host(headers: &HeaderMap, hosts: &[String]) -> bool {
 ///
 /// # Returns
 ///
-/// `true` if there's no `Origin`, or it's `http://` plus one of `hosts`.
+/// `true` if there's no `Origin`, it's `http://` plus one of `hosts`, or it's one of [`EXTRA_ALLOWED_ORIGINS`].
 pub(crate) fn is_allowed_origin(headers: &HeaderMap, hosts: &[String]) -> bool {
     match headers.get(header::ORIGIN) {
         None => true,
         Some(origin) => origin.to_str()
-            .is_ok_and(|origin| hosts.iter().any(|allowed| origin == format!("http://{allowed}"))),
+            .is_ok_and(|origin| EXTRA_ALLOWED_ORIGINS.contains(&origin) || hosts.iter().any(|allowed| origin == format!("http://{allowed}"))),
     }
 }
 

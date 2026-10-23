@@ -95,10 +95,12 @@ fn origin_check() {
     assert!(is_allowed_origin(&HeaderMap::new(), &hosts));
     assert!(is_allowed_origin(&headers(header::ORIGIN, "http://127.0.0.1:45127"), &hosts));
     assert!(is_allowed_origin(&headers(header::ORIGIN, "http://localhost:45127"), &hosts));
+    assert!(is_allowed_origin(&headers(header::ORIGIN, "http://localhost:8000"), &hosts));
 
     assert!(!is_allowed_origin(&headers(header::ORIGIN, "https://evil.example"), &hosts));
     assert!(!is_allowed_origin(&headers(header::ORIGIN, "null"), &hosts));
     assert!(!is_allowed_origin(&headers(header::ORIGIN, "http://127.0.0.1:8080"), &hosts));
+    assert!(!is_allowed_origin(&headers(header::ORIGIN, "http://localhost:8000.evil.example"), &hosts));
     assert!(!is_allowed_origin(&headers(header::ORIGIN, "http://127.0.0.1:45127.evil.example"), &hosts));
 }
 
